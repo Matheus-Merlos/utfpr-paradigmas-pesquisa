@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"utfpr-paradigmas-pesquisa/scanner"
+	"super-grep/scanner"
 )
 
 func main() {
