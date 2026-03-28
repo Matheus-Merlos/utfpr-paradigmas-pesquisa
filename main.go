@@ -47,7 +47,7 @@ func main() {
 			}
 			fmt.Println("Índice do banco de dados atualizado com sucesso.")
 		} else {
-			fmt.Println("Nenhuma ocorrência nova para salvar no índice.")
+			fmt.Println("Nenhuma ocorrência para salvar no índice.")
 		}
 	} else {
 		fmt.Println("Carregando resultados do banco de dados...")
@@ -56,8 +56,12 @@ func main() {
 		}
 	}
 
-	fmt.Println("Resultados:")
-	for _, path := range foundPaths {
-		fmt.Println(path)
+	if len(foundPaths) == 0 {
+		fmt.Println("Nenhum resultado para imprimir.")
+	} else {
+		fmt.Println("Resultados:")
+		for _, path := range foundPaths {
+			fmt.Println(path)
+		}
 	}
 }
