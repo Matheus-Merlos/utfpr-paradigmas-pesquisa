@@ -12,11 +12,6 @@ func main() {
 	fmt.Printf("Busca conluida, total de pastas encontradas: %d\n", len(foundPaths))
 
 	for _, path := range foundPaths {
-		fileContent, err := os.ReadFile(path)
-		if err != nil {
-			fmt.Println("Erro: ", err)
-			return
-		}
-		fmt.Println(string(fileContent))
+		fmt.Println(path)
 	}
 }

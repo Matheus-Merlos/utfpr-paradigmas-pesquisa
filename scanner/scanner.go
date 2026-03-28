@@ -9,24 +9,26 @@ import (
 	"sync"
 )
 
-func HasIndex(path string, searchIndex string) bool {
+func HasIndex(path string, searchIndex string) (int, bool) {
 	file, err := os.Open(path)
 	if err != nil {
-		return false
+		return 0, false
 	}
 	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	lowerCaseSearchIndex := strings.ToLower(searchIndex)
 
+	lineCount := 1
 	for scanner.Scan() {
 		line := scanner.Text()
 		if strings.Contains(strings.ToLower(line), lowerCaseSearchIndex) {
-			return true
+			return lineCount, true
 		}
+		lineCount++
 	}
 
-	return false
+	return 0, false
 }
 
 func StreamFilesWithIndex(path string, searchIndex string, results chan<- string, wg *sync.WaitGroup) {
@@ -50,8 +52,10 @@ func StreamFilesWithIndex(path string, searchIndex string, results chan<- string
 				return
 			}
 
-			if HasIndex(absolutePath, searchIndex) {
-				results <- absolutePath
+			line, hasIndex := HasIndex(absolutePath, searchIndex)
+
+			if hasIndex {
+				results <- fmt.Sprintf("%s:%d", absolutePath, line)
 			}
 		}
 	}
