@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS termList (
 );
 
 CREATE TABLE IF NOT EXISTS foundDirs (
-    idTerm INTEGER NOT NULL,
+  idTerm INTEGER NOT NULL,
   absolutePathLine TEXT NOT NULL,
   FOREIGN KEY (idTerm) REFERENCES termList(id) ON DELETE CASCADE,
   UNIQUE(idTerm, absolutePathLine)
