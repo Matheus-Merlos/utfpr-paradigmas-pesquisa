@@ -19,7 +19,10 @@ func main() {
 
 	history, err := db.FindTerm(searchIndex)
 	if err == nil && len(history) > 0 {
-		fmt.Printf("O termo já existe no banco com %d ocorrencias passsadas.\n", len(history))
+		fmt.Printf("O termo já existe no banco com %d ocorrencias passsadas nos seguintes diretórios: \n", len(history))
+		for i, res := range history {
+			fmt.Printf(" [%02d] %s\n", i+1, res.AbsolutePathLine)
+		}
 	}
 
 	var choice string

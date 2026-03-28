@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -77,15 +78,22 @@ func UpsertPath(term string, absolutePaths []string) error {
 	}
 	defer tx.Rollback()
 
-	var termID int64
-	err = tx.QueryRow(`
-        INSERT INTO termList (term) 
-        VALUES (?) 
-        ON CONFLICT(term) DO UPDATE SET term = excluded.term
-        RETURNING id
-    `, term).Scan(&termID)
+	var termID int
+
+	err = tx.QueryRow(`SELECT id FROM termList WHERE term = ?`, term).Scan(&termID)
+
 	if err != nil {
-		return fmt.Errorf("erro ao inserir termo: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			err = tx.QueryRow(`
+				INSERT INTO termList (term) 
+				VALUES (?)
+				RETURNING id
+			`, term).Scan(&termID)
+
+			if err != nil {
+				return fmt.Errorf("erro ao inserir termo: %w", err)
+			}
+		}
 	}
 
 	stmt, err := tx.Prepare(`
