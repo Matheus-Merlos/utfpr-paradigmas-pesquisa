@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func ListFolderContent(path string) {
@@ -13,15 +14,16 @@ func ListFolderContent(path string) {
 	}
 
 	for _, entry := range entries {
+		fullPath := filepath.Join(path, entry.Name())
 		if entry.IsDir() {
-			ListFolderContent(entry.Name())
+			ListFolderContent(fullPath)
 		} else {
-			info, err := entry.Info()
+			absolutePath, err := filepath.Abs(fullPath)
 			if err != nil {
-				fmt.Println("Ocorreu um erro ao ler as informações do arquivo: ", err)
+				fmt.Println("Erro ao ler caminho absoluto: ", err)
 				return
 			}
-			fmt.Println("Arquivo: ", info.Name())
+			fmt.Println(absolutePath)
 		}
 	}
 }
