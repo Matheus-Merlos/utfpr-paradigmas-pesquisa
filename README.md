@@ -38,3 +38,19 @@ go build -o super-grep
 ```bash
 ./super-grep prego
 ```
+
+### Estrutura do banco
+
+```sql
+CREATE TABLE IF NOT EXISTS termList (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  term VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS foundDirs (
+    idTerm INTEGER NOT NULL,
+  absolutePathLine TEXT NOT NULL,
+  FOREIGN KEY (idTerm) REFERENCES termList(id) ON DELETE CASCADE,
+  UNIQUE(idTerm, absolutePathLine)
+);
+```
