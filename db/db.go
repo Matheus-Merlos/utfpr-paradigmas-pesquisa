@@ -52,12 +52,13 @@ func createTables() {
 	query := `
 	CREATE TABLE IF NOT EXISTS termList (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		term VARCHAR(255) NOT NULL
+		term VARCHAR(255) UNIQUE NOT NULL
 	);
 	CREATE TABLE IF NOT EXISTS foundDirs (
 	    idTerm INTEGER NOT NULL,
 		absolutePathLine TEXT NOT NULL,
-		FOREIGN KEY (idTerm) REFERENCES termList(id) ON DELETE CASCADE
+		FOREIGN KEY (idTerm) REFERENCES termList(id) ON DELETE CASCADE,
+		UNIQUE(idTerm, absolutePathLine)
 	);`
 
 	_, err := DB.Exec(query)
@@ -68,7 +69,7 @@ func createTables() {
 	fmt.Println("Table created (or already exists)")
 }
 
-func InsertPath(term string, absolutePaths []string) error {
+func UpsertPath(term string, absolutePaths []string) error {
 
 	tx, err := DB.Begin()
 	if err != nil {
@@ -88,7 +89,7 @@ func InsertPath(term string, absolutePaths []string) error {
 	}
 
 	stmt, err := tx.Prepare(`
-        INSERT INTO foundDirs (idTerm, absolutePathLine)
+        INSERT OR IGNORE INTO foundDirs (idTerm, absolutePathLine)
         VALUES (?, ?)
     `)
 
@@ -115,7 +116,7 @@ func InsertPath(term string, absolutePaths []string) error {
 	return nil
 }
 
-func findTerm(term string) ([]FoundResult, error) {
+func FindTerm(term string) ([]FoundResult, error) {
 	query := `
         SELECT t.id, t.term, fd.absolutePathLine
         FROM termList t
