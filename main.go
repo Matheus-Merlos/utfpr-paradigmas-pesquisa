@@ -1,12 +1,37 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"sync"
 )
 
-func ListFolderContent(path string) {
+func HasIndex(path string, searchIndex string) bool {
+	file, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	lowerCaseSearchIndex := strings.ToLower(searchIndex)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.Contains(strings.ToLower(line), lowerCaseSearchIndex) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func GetAllFilesFromPath(path string, searchIndex string, results chan<- string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	entries, err := os.ReadDir(path)
 	if err != nil {
 		fmt.Println("Erro ao ler diretório: ", err)
@@ -16,18 +41,51 @@ func ListFolderContent(path string) {
 	for _, entry := range entries {
 		fullPath := filepath.Join(path, entry.Name())
 		if entry.IsDir() {
-			ListFolderContent(fullPath)
-		} else {
+			wg.Add(1)
+			go GetAllFilesFromPath(fullPath, searchIndex, results, wg)
+		} else if entry.Type().IsRegular() {
 			absolutePath, err := filepath.Abs(fullPath)
 			if err != nil {
 				fmt.Println("Erro ao ler caminho absoluto: ", err)
 				return
 			}
-			fmt.Println(absolutePath)
+
+			if HasIndex(absolutePath, searchIndex) {
+				results <- absolutePath
+			}
 		}
 	}
 }
 
 func main() {
-	ListFolderContent(".")
+	fmt.Println("Lendo diretório atual...")
+	var wg sync.WaitGroup
+
+	results := make(chan string)
+
+	wg.Add(1)
+
+	go GetAllFilesFromPath(".", os.Args[1], results, &wg)
+
+	go func() {
+		wg.Wait()
+		close(results)
+	}()
+
+	var foundPaths []string
+
+	for path := range results {
+		foundPaths = append(foundPaths, path)
+	}
+
+	fmt.Printf("Busca conluida, total de pastas encontradas: %d\n", len(foundPaths))
+
+	for _, path := range foundPaths {
+		fileContent, err := os.ReadFile(path)
+		if err != nil {
+			fmt.Println("Erro: ", err)
+			return
+		}
+		fmt.Println(string(fileContent))
+	}
 }
