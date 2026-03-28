@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"super-grep/db"
 	"super-grep/scanner"
 )
 
@@ -11,6 +12,8 @@ func main() {
 	if len(args) == 0 {
 		panic("Erro: termo de pesquisa inválido!")
 	}
+
+	db.InitDB()
 
 	foundPaths := scanner.ScanFilesForIndex(".", os.Args[1])
 
